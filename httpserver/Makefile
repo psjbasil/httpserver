@@ -1,16 +1,19 @@
 export tag=v1.0
 root:
-	export ROOT=github.com/cncamp/golang
+	export ROOT=https://github.com/psjbasil/httpserver
 
 build:
-	echo "building httpserver binary"
 	mkdir -p bin/amd64
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/amd64 .
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o bin/amd64/app
 
 release: build
-	echo "building httpserver container"
-	docker build -t cncamp/httpserver:${tag} .
+	echo "building httpserver image"
+	docker build -t psjbasil/httpserver:${tag} .
 
 push: release
-	echo "pushing cncamp/httpserver"
-	docker push cncamp/httpserver:v1.0
+	echo "pushing to psjbasil/httpserver"
+	docker push psjbasil/httpserver:${tag}
+pull:
+	sudo docker pull psjbasil/httpserver:${tag}
+run:
+	sudo docker run psjbasil/httpserver:${tag}

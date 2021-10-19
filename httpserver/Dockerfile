@@ -1,9 +1,13 @@
-FROM ubuntu
-ENV MY_SERVICE_PORT=80
-ENV MY_SERVICE_PORT1=80
-ENV MY_SERVICE_PORT2=80
-ENV MY_SERVICE_PORT3=80
-LABEL multi.label1="value1" multi.label2="value2" other="value3"
-ADD bin/amd64/httpserver /httpserver
-EXPOSE 80
-ENTRYPOINT /httpserver
+FROM golang:1.17 as builder
+WORKDIR /usr/src/app
+ENV GOPROXY https://goproxy.cn,direct
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o http-server
+
+FROM alpine as runner
+WORKDIR /opt/app
+COPY --from=builder /usr/src/app/http-server /opt/app/
+EXPOSE 8080
+ENTRYPOINT ["http-server"]
